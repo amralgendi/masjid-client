@@ -1,6 +1,7 @@
 import { createContext, useReducer, useEffect } from "react";
 import jwtDecode from "jwt-decode";
 import Cookies from "js-cookie";
+import Constants from "../constants";
 
 const AuthContext = createContext({
   user: null,
@@ -30,13 +31,13 @@ const AuthProvider = (props) => {
 
   const login = (tokens) => {
     Cookies.set("idToken", tokens.idToken, {
-      domain: ".hello.localhost",
+      domain: `.${Constants.host}`,
     });
     Cookies.set("accessToken", tokens.accessToken, {
-      domain: ".hello.localhost",
+      domain: `.${Constants.host}`,
     });
     Cookies.set("refreshToken", tokens.refreshToken, {
-      domain: ".hello.localhost",
+      domain: `.${Constants.host}`,
     });
 
     const decodedToken = jwtDecode(tokens.idToken);
@@ -47,11 +48,23 @@ const AuthProvider = (props) => {
           .map((id) => id.trim());
 
     const user = {
-      id: decodedToken.sub,
+      id: decodedToken.email,
       isConfirmed: decodedToken.email_verified,
       email: decodedToken.email,
-      appOrgUserRoleIds,
+      appOrgUserRoles: [],
     };
+
+    fetch(
+      `${Constants.apiBase}/app-org-user-roles?UserId=${decodedToken.email}`
+    ).then((res) =>
+      res.json().then((json) => {
+        if (res.ok)
+          dispatch({
+            type: "LOGIN",
+            payload: { data: { ...user, appOrgUserRoles: json }, tokens },
+          });
+      })
+    );
 
     dispatch({
       type: "LOGIN",
@@ -60,7 +73,15 @@ const AuthProvider = (props) => {
   };
 
   const logout = () => {
-    Cookies.remove("jwtTokens");
+    Cookies.remove("idToken", {
+      domain: `.${Constants.host}`,
+    });
+    Cookies.remove("accessToken", {
+      domain: `.${Constants.host}`,
+    });
+    Cookies.remove("refreshToken", {
+      domain: `.${Constants.host}`,
+    });
     dispatch({
       type: "LOGOUT",
     });
@@ -78,13 +99,13 @@ const AuthProvider = (props) => {
 
       if (decodedToken.exp * 1000 < Date.now()) {
         Cookies.remove("idToken", {
-          domain: ".hello.localhost",
+          domain: `.${Constants.host}`,
         });
         Cookies.remove("accessToken", {
-          domain: ".hello.localhost",
+          domain: `.${Constants.host}`,
         });
         Cookies.remove("refreshToken", {
-          domain: ".hello.localhost",
+          domain: `.${Constants.host}`,
         });
       } else {
         login(tokens);

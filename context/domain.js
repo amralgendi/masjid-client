@@ -3,6 +3,7 @@ import Constants from "../constants";
 
 const DomainContext = createContext({
   domainDetails: null,
+  loading: true,
   setDomainDetails: (domainDetails) => {},
 });
 
@@ -12,6 +13,7 @@ const domainReducer = (state, action) => {
       return {
         ...state,
         domainDetails: action.payload,
+        loading: false,
       };
     default:
       return state;
@@ -19,10 +21,12 @@ const domainReducer = (state, action) => {
 };
 
 const DomainProvider = (props) => {
-  const [state, dispatch] = useReducer(domainReducer, { domainDetails: null });
+  const [state, dispatch] = useReducer(domainReducer, {
+    domainDetails: null,
+    loading: false,
+  });
 
   const setDomainDetails = (domainDetails) => {
-    console.log(domainDetails);
     dispatch({
       type: "SET",
       payload: domainDetails,
@@ -30,7 +34,7 @@ const DomainProvider = (props) => {
   };
 
   useEffect(() => {
-    fetch(`${Constants.apiBase}/saas/domain-details`).then((res) =>
+    fetch(`${Constants.apiBase}/domain-details`).then((res) =>
       res.json().then((json) => {
         if (res.ok) {
           setDomainDetails(json);

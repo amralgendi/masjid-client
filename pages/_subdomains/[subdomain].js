@@ -1,12 +1,33 @@
 import Head from "next/head";
 import Constants from "../../constants";
 import { DomainContext } from "../../context/domain";
-import { useContext } from "react";
+import { AppContext } from "../../context/app";
+import { AuthContext } from "../../context/auth";
+import { useContext, useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function OrgMain({ subdomain }) {
-  const context = useContext(DomainContext);
+  const { domainDetails } = useContext(DomainContext);
+  const { appDetails } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
-  console.log(context);
+  const [orgRoles, setOrgRoles] = useState([]);
+
+  const org = domainDetails?.subdomainOrgIds?.[subdomain];
+
+  useEffect(() => {
+    if (org)
+      fetch(`${Constants.apiBase}/app-org-user-roles?OrgId=${org}`).then(
+        (res) =>
+          res.json().then((json) => {
+            if (res.ok) {
+              setOrgRoles(json);
+            }
+          })
+      );
+  }, [org]);
+
+  console.log({ domainDetails });
   return (
     <div>
       <Head>
@@ -18,9 +39,20 @@ export default function OrgMain({ subdomain }) {
       <main>
         <h1>This is the an Organization Page for BizContactPro</h1>
         <p>Subdomain: {subdomain}</p>
-        <p>
-          Organization: {context?.domainDetails?.subdomainOrgIds?.[subdomain]}
-        </p>
+        <p>Organization: {org}</p>
+        {user?.data.appOrgUserRoles.findIndex(
+          (i) => i.orgId == org && i.role == "Admin"
+        ) && (
+          <div>
+            <p>You are an Admin</p>
+            <p>User Roles</p>
+            {orgRoles.map((i) => (
+              <div key={i.id}>
+                {i.userId} with role {i.role}
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
@@ -36,7 +68,7 @@ export const getStaticProps = (context) => {
 };
 
 export const getStaticPaths = async () => {
-  const res = await fetch(`${Constants.apiBase}/saas/domain-details`);
+  const res = await fetch(`${Constants.apiBase}/domain-details`);
   const json = await res.json();
 
   return {

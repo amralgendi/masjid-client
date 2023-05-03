@@ -1,53 +1,44 @@
 import Head from "next/head";
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/auth";
+import { AppContext } from "../../context/app";
+import { DomainContext } from "../../context/domain";
 import Link from "next/link";
 import Constants from "../../constants";
 
 export default function Home() {
   const { user } = useContext(AuthContext);
+  const { appDetails } = useContext(AppContext);
+  const { domainDetails } = useContext(DomainContext);
   console.log(user);
-  const [orgs, setOrgs] = useState([]);
-
-  useEffect(() => {
-    if (!user) return;
-    fetch(
-      `${Constants.apiBase}/saas/app-org-user-roles?UserId=${user.data.email}`
-    )
-      .then((res) =>
-        res.json().then((json) => {
-          if (res.ok) {
-            console.log(json);
-          } else alert(JSON.stringify(json));
-        })
-      )
-      .catch((e) => console.log(e));
-  }, [user]);
+  console.log(appDetails);
+  console.log(domainDetails);
 
   return (
     <div>
       <Head>
         <title>Home Page</title>
-        <meta name="description" content="The Home Page of BizContactPro" />
+        <meta name="description" content="The Home Page of MASJID" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
-        <h1>This is the Home Page of BizContactPro</h1>
+        <h1>This is the Home Page of MASJID</h1>
         {user ? (
           <div>
-            <p>You are Logged in</p>
             <p>Here are your information</p>
             <ul>
               <li>id: {user.data.id}</li>
               <li>email: {user.data.email}</li>
             </ul>
-            {orgs.length > 0 ? (
+            {user.data.appOrgUserRoles?.length > 0 ? (
               <>
                 <p>You are in the following Organization:</p>
                 <ul>
-                  {orgs.map((org) => (
-                    <li key={org}>{org}</li>
+                  {user.data.appOrgUserRoles.map((appOrgUserRole) => (
+                    <li key={appOrgUserRole.id}>
+                      {appOrgUserRole.orgId} with role {appOrgUserRole.role}
+                    </li>
                   ))}
                 </ul>
               </>
@@ -59,13 +50,23 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <div>
-            <p>Not Logged In</p>
-            <Link href="http://auth.hello.localhost:3000/login">Login</Link>
-            <p>or</p>
-            <Link href="http://auth.hello.localhost:3000/login">Register</Link>
-          </div>
+          <div></div>
         )}
+        {domainDetails &&
+          Object.keys(domainDetails.subdomainOrgIds).length > 0 && (
+            <div>
+              <p>Subdomains:</p>
+              <ul>
+                {Object.keys(domainDetails.subdomainOrgIds).map((subdomain) => (
+                  <li key={subdomain}>
+                    <Link href={`http://${subdomain}.${Constants.domain}`}>
+                      {subdomain}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
       </main>
     </div>
   );

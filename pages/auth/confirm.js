@@ -15,9 +15,9 @@ export default function Confirm() {
 
   useEffect(() => {
     if (!confirmData.email) {
-      alert("Email Does not Exist");
+      router.push("/login");
     }
-  }, [confirmData.email]);
+  }, [confirmData.email, router]);
 
   const handleInput = (e) => {
     setConfirmData({ ...confirmData, [e.target.name]: e.target.value });
@@ -26,7 +26,7 @@ export default function Confirm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`${Constants.apiBase}/saas/auth/confirm`, {
+    const res = await fetch(`${Constants.apiBase}/auth/confirm`, {
       method: "POST",
       body: JSON.stringify(confirmData),
       headers: {
@@ -37,7 +37,7 @@ export default function Confirm() {
     const json = await res.json();
 
     if (res.ok) {
-      router.push("/auth/login");
+      router.push("/login");
     } else {
       console.log(json);
     }

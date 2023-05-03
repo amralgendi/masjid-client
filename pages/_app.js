@@ -1,14 +1,19 @@
 import { AuthProvider } from "../context/auth";
 import { DomainProvider } from "../context/domain";
+import { AppProvider } from "../context/app";
 import "../styles/globals.css";
+import Nav from "../components/Nav";
 
 function MyApp({ Component, pageProps }) {
   return (
-    <DomainProvider>
-      <AuthProvider>
-        <Component {...pageProps} />
-      </AuthProvider>
-    </DomainProvider>
+    <AppProvider>
+      <DomainProvider>
+        <AuthProvider>
+          <Nav />
+          <Component {...pageProps} />
+        </AuthProvider>
+      </DomainProvider>
+    </AppProvider>
   );
 }
 

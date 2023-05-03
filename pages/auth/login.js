@@ -23,7 +23,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`${Constants.apiBase}/saas/auth/login`, {
+    const res = await fetch(`${Constants.apiBase}/auth/login`, {
       method: "POST",
       body: JSON.stringify(loginData),
       headers: {
@@ -37,13 +37,24 @@ export default function Login() {
       if (!json.nextStep) {
         context.login(json.tokens);
         console.log(json);
-        // router.push("http://hello.localhost:3000");
+        router.push("http://hello.localhost:3000");
       } else {
         alert("Next Step Required!");
       }
     } else {
-      if (json.Message === "User is not confirmed.")
+      if (json.Message === "User is not confirmed.") {
+        await fetch(
+          "https://api.bizcontactpro.xyz/saas/auth/resendConfirmation",
+          {
+            method: "POST",
+            body: JSON.stringify({ email: confirmData.email }),
+            headers: {
+              "Content-type": "application/json",
+            },
+          }
+        );
         router.push("/confirm?email=" + loginData.email, "/confirm");
+      }
     }
   };
 

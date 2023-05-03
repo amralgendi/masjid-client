@@ -24,7 +24,7 @@ export default function Register() {
       alert("Password must match");
     }
 
-    fetch(`${Constants.apiBase}/saas/auth/register`, {
+    fetch(`${Constants.apiBase}/auth/register`, {
       method: "POST",
       body: JSON.stringify(registerData),
       headers: {

@@ -17,7 +17,6 @@ export const config = {
 
 export default async function middleware(req) {
   console.log("Constants", Constants);
-  console.log(process.env.DOMAIN);
   const domain =
     process.env.NODE_ENV == "development"
       ? "hello.localhost:3000"
@@ -25,7 +24,7 @@ export default async function middleware(req) {
 
   const url = req.nextUrl;
 
-  console.log(url.pathname);
+  console.log("URL: ", url.pathname);
 
   const hostname = req.headers.get("host");
 
@@ -49,8 +48,6 @@ export default async function middleware(req) {
       subdomain +
       "/" +
       (url.pathname === "/" ? "" : url.pathname);
-
-  console.log(url.pathname);
 
   return NextResponse.rewrite(url);
 }
